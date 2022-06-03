@@ -54,21 +54,24 @@ def Arduino_port() :
 
 Data = Arduino_port()										# Get data from arduino
 
-for SM_deg in np.arange(0, 45, 0.1):								# SM Goal Poistion in degree								
-	SM_deg_val = SM_deg * 2048 / 180							# Value to send to the SM
+SM_initial = dxl.get_pos(motor_ids)
+SM_initial_deg = (SM_initial[0] * 180 / 2048) % 360						# SM initial degree position
+
+for SM_GP_deg in np.arange(SM_initial_deg, SM_initial_deg + 45, 0.5):				# SM Goal Poistion from current position (in degree)	
+	SM_GP_value = SM_GP_deg * 2048 / 180							# Value to send to the SM for the goal position
 	line1 = Data.readline()									# Read data received from arduino
 	list_data = line1.strip().split()							# Delete spacing characters + data separation
-	dxl.set_goal_pos(motor_ids, SM_deg_val)							# Set Goal Position
+	dxl.set_goal_pos(motor_ids, SM_GP_value)						# Set Goal Position
 	
 	if len (list_data) != 0 :								# Ignore empty lines
-		SM = dxl.get_pos(motor_ids)							# Read of SM Position in decimal						
-		
+		SM = dxl.get_pos(motor_ids)							# Read of SM Position in decimal
 		voltage = float (list_data[2].decode())						# Convert string to float
+		print ('U : ', voltage,'V')
 		force = float (list_data[6].decode())
 		
-		SM_read_deg = SM[0] * 180 / 2048						# Read of SM position in degree
+		SM_read_deg = (SM[0] * 180 / 2048) % 360					# Read of SM position in degree
 		#SM_read_rad = SM_read_deg * math.pi / 180					# Read of SM position in radian
-		elongation = (math.pi) * R * SM_read_deg / 180					# Length of cable pulled in mm
+		elongation = (math.pi) * R * (SM_read_deg - SM_initial_deg) / 180		# Length of cable pulled in mm
 		#elongation = R * SM_rad							# Uncomment this if you are getting SM position in radian
 			
 		t_mes = time.time()								# Time measure
@@ -79,13 +82,13 @@ for SM_deg in np.arange(0, 45, 0.1):								# SM Goal Poistion in degree
 		list_force.append(force)
 		list_t.append(t_real)
 		list_elongation.append(elongation)
-		list_position.append(SM_deg)
-		print ('U : ', voltage,'V')
+		list_position.append(SM_GP_deg)
+		
 		"""
 		print (' ')
 		print ('U : ', voltage,'V')
 		print ('F : ', force,'N')
-		print ('pos : ', SM_deg,'°')
+		print ('pos : ', SM_GP_deg,'°')
 		print ('t : ', t_real,'s')
 		print ('lecture :',SM_read_deg)
 		"""
@@ -115,18 +118,15 @@ with open ('data_arduino.txt', 'r') as datafile :
 """
 fig = plt.figure()
 plt.ylabel('Voltage (V)')
-
 subplot_1 = fig.add_subplot(2,1,1)
 plt.plot(P, U)
 plt.title('Voltage as a function of time and elongation')
 plt.xlabel('Elongation (mm)')
 plt.ylim([2, 5])
-
 subplot_1 = fig.add_subplot(2,1,2)
 plt.plot(t, U)
 plt.xlabel('Time (s)')
 plt.ylim([2, 5])
-
 plt.show()"""
 plt.figure(1)
 plt.plot(P, U)
@@ -134,4 +134,3 @@ plt.title('Voltage as a function of elongation')
 plt.xlabel('Elongation (mm)')
 plt.ylabel('Voltage (V)')
 plt.show()
-
