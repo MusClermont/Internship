@@ -23,7 +23,7 @@ const int     HX711_sck = 11;                                                   
 const double  zero_signal = 0.0323;                                               // [mv/V]
 const double  maxN_delta = 0.483562;                                              // [mv/V]
 const double  maxN = 50;                                                          // [N]
-const double  AVdd = 4.24;                                                        // [V]
+const double  AVdd = 4.52;                                                        // [V]
 const double  GAIN =  128;
 const double  maxRead = 0xFFFFFF;
 
